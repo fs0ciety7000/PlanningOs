@@ -11,33 +11,53 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================
--- ENUMS
+-- ENUMS (idempotent - skip if already exists)
 -- ============================================
 
-CREATE TYPE user_role AS ENUM ('admin', 'planner', 'agent');
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'planner', 'agent');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE TYPE shift_category AS ENUM (
-    'standard',      -- 101, 102, etc.
-    'intermediate',  -- 111, 112, etc.
-    'night',         -- 121, 6121, 7121
-    'partial',       -- X_AM, X_PM
-    'special',       -- X_10, AG
-    'rest',          -- RH, CH, RR, ZM
-    'leave'          -- CN, JC, CV
-);
+DO $$ BEGIN
+    CREATE TYPE shift_category AS ENUM (
+        'standard',      -- 101, 102, etc.
+        'intermediate',  -- 111, 112, etc.
+        'night',         -- 121, 6121, 7121
+        'partial',       -- X_AM, X_PM
+        'special',       -- X_10, AG
+        'rest',          -- RH, CH, RR, ZM
+        'leave'          -- CN, JC, CV
+    );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE TYPE leave_status AS ENUM ('pending', 'approved', 'rejected', 'cancelled');
+DO $$ BEGIN
+    CREATE TYPE leave_status AS ENUM ('pending', 'approved', 'rejected', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE TYPE notification_type AS ENUM ('info', 'warning', 'error', 'success');
+DO $$ BEGIN
+    CREATE TYPE notification_type AS ENUM ('info', 'warning', 'error', 'success');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE TYPE audit_action AS ENUM ('create', 'update', 'delete', 'login', 'logout');
+DO $$ BEGIN
+    CREATE TYPE audit_action AS ENUM ('create', 'update', 'delete', 'login', 'logout');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- ============================================
 -- TABLE: organizations
 -- Multi-tenancy support
 -- ============================================
 
-CREATE TABLE organizations (
+CREATE TABLE IF NOT EXISTS organizations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     slug VARCHAR(100) NOT NULL UNIQUE,
@@ -58,7 +78,7 @@ COMMENT ON COLUMN organizations.year_start_date IS 'Anchor date for period calcu
 -- Permission-based access control
 -- ============================================
 
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
     name VARCHAR(50) NOT NULL,
@@ -78,7 +98,7 @@ COMMENT ON TABLE roles IS 'User roles with granular permissions';
 -- User accounts with leave entitlements
 -- ============================================
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     role_id UUID REFERENCES roles(id) ON DELETE SET NULL,
@@ -117,9 +137,9 @@ COMMENT ON TABLE users IS 'User accounts for all roles';
 COMMENT ON COLUMN users.cn_entitlement IS 'Annual Congé Normalisé entitlement in days';
 COMMENT ON COLUMN users.jc_entitlement IS 'Annual Jour Chômé entitlement in days';
 
-CREATE INDEX idx_users_org_active ON users(organization_id, is_active);
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_matricule ON users(organization_id, matricule);
+CREATE INDEX IF NOT EXISTS idx_users_org_active ON users(organization_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_matricule ON users(organization_id, matricule);
 
 -- ============================================
 -- TABLE: shift_types
@@ -128,7 +148,7 @@ CREATE INDEX idx_users_matricule ON users(organization_id, matricule);
 -- LISTE_PRESTATIONS + LISTE_REPOS + special codes
 -- ============================================
 
-CREATE TABLE shift_types (
+CREATE TABLE IF NOT EXISTS shift_types (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
 
@@ -168,16 +188,16 @@ COMMENT ON TABLE shift_types IS 'Dynamic prestation/repos types configuration';
 COMMENT ON COLUMN shift_types.night_hours IS 'Night hours subset (8h for 121/6121/7121, 2h for standard)';
 COMMENT ON COLUMN shift_types.is_holiday_indicator IS 'True for 7xxx codes that indicate holiday work';
 
-CREATE INDEX idx_shift_types_org_active ON shift_types(organization_id, is_active);
-CREATE INDEX idx_shift_types_code ON shift_types(organization_id, code);
-CREATE INDEX idx_shift_types_category ON shift_types(category);
+CREATE INDEX IF NOT EXISTS idx_shift_types_org_active ON shift_types(organization_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_shift_types_code ON shift_types(organization_id, code);
+CREATE INDEX IF NOT EXISTS idx_shift_types_category ON shift_types(category);
 
 -- ============================================
 -- TABLE: periods
 -- 13 periods of 28 days each = 364 days/year
 -- ============================================
 
-CREATE TABLE periods (
+CREATE TABLE IF NOT EXISTS periods (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
 
@@ -197,15 +217,15 @@ CREATE TABLE periods (
 COMMENT ON TABLE periods IS '13 periods of 28 days each per year';
 COMMENT ON COLUMN periods.hour_quota IS 'Maximum hours per period (default 160h)';
 
-CREATE INDEX idx_periods_org_year ON periods(organization_id, year);
-CREATE INDEX idx_periods_dates ON periods(start_date, end_date);
+CREATE INDEX IF NOT EXISTS idx_periods_org_year ON periods(organization_id, year);
+CREATE INDEX IF NOT EXISTS idx_periods_dates ON periods(start_date, end_date);
 
 -- ============================================
 -- TABLE: holidays
 -- Fixed and moveable holidays (Computus-based)
 -- ============================================
 
-CREATE TABLE holidays (
+CREATE TABLE IF NOT EXISTS holidays (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
 
@@ -222,15 +242,15 @@ CREATE TABLE holidays (
 COMMENT ON TABLE holidays IS 'Public holidays per organization';
 COMMENT ON COLUMN holidays.is_moveable IS 'True for Easter-derived holidays';
 
-CREATE INDEX idx_holidays_org_date ON holidays(organization_id, date);
-CREATE INDEX idx_holidays_org_year ON holidays(organization_id, EXTRACT(YEAR FROM date));
+CREATE INDEX IF NOT EXISTS idx_holidays_org_date ON holidays(organization_id, date);
+CREATE INDEX IF NOT EXISTS idx_holidays_org_year ON holidays(organization_id, EXTRACT(YEAR FROM date));
 
 -- ============================================
 -- TABLE: schedules
 -- Main planning data - one entry per user per day
 -- ============================================
 
-CREATE TABLE schedules (
+CREATE TABLE IF NOT EXISTS schedules (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -254,12 +274,12 @@ CREATE TABLE schedules (
 
 COMMENT ON TABLE schedules IS 'Main planning matrix - one shift per user per day';
 
-CREATE INDEX idx_schedules_user_date ON schedules(user_id, date);
-CREATE INDEX idx_schedules_org_date ON schedules(organization_id, date);
-CREATE INDEX idx_schedules_period ON schedules(period_id);
-CREATE INDEX idx_schedules_shift_type ON schedules(shift_type_id);
+CREATE INDEX IF NOT EXISTS idx_schedules_user_date ON schedules(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_schedules_org_date ON schedules(organization_id, date);
+CREATE INDEX IF NOT EXISTS idx_schedules_period ON schedules(period_id);
+CREATE INDEX IF NOT EXISTS idx_schedules_shift_type ON schedules(shift_type_id);
 -- Composite index for matrix view
-CREATE INDEX idx_schedules_matrix ON schedules(organization_id, date, user_id);
+CREATE INDEX IF NOT EXISTS idx_schedules_matrix ON schedules(organization_id, date, user_id);
 
 -- ============================================
 -- TABLE: period_balances
@@ -267,7 +287,7 @@ CREATE INDEX idx_schedules_matrix ON schedules(organization_id, date, user_id);
 -- Updated on schedule changes
 -- ============================================
 
-CREATE TABLE period_balances (
+CREATE TABLE IF NOT EXISTS period_balances (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     period_id UUID NOT NULL REFERENCES periods(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -300,16 +320,16 @@ CREATE TABLE period_balances (
 COMMENT ON TABLE period_balances IS 'Cached period statistics for quota validation';
 COMMENT ON COLUMN period_balances.is_valid IS 'True if all quotas met (4 CH, 4 RH, 1 CV, RR=holidays)';
 
-CREATE INDEX idx_period_balances_user ON period_balances(user_id);
-CREATE INDEX idx_period_balances_valid ON period_balances(is_valid);
-CREATE INDEX idx_period_balances_period_user ON period_balances(period_id, user_id);
+CREATE INDEX IF NOT EXISTS idx_period_balances_user ON period_balances(user_id);
+CREATE INDEX IF NOT EXISTS idx_period_balances_valid ON period_balances(is_valid);
+CREATE INDEX IF NOT EXISTS idx_period_balances_period_user ON period_balances(period_id, user_id);
 
 -- ============================================
 -- TABLE: leave_requests
 -- Agent leave request workflow
 -- ============================================
 
-CREATE TABLE leave_requests (
+CREATE TABLE IF NOT EXISTS leave_requests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -336,17 +356,17 @@ CREATE TABLE leave_requests (
 
 COMMENT ON TABLE leave_requests IS 'Agent leave/absence requests';
 
-CREATE INDEX idx_leave_requests_user ON leave_requests(user_id);
-CREATE INDEX idx_leave_requests_status ON leave_requests(status);
-CREATE INDEX idx_leave_requests_dates ON leave_requests(start_date, end_date);
-CREATE INDEX idx_leave_requests_pending ON leave_requests(organization_id, status) WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS idx_leave_requests_user ON leave_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_leave_requests_status ON leave_requests(status);
+CREATE INDEX IF NOT EXISTS idx_leave_requests_dates ON leave_requests(start_date, end_date);
+CREATE INDEX IF NOT EXISTS idx_leave_requests_pending ON leave_requests(organization_id, status) WHERE status = 'pending';
 
 -- ============================================
 -- TABLE: notifications
 -- In-app notifications
 -- ============================================
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
@@ -363,15 +383,15 @@ CREATE TABLE notifications (
 
 COMMENT ON TABLE notifications IS 'User notifications';
 
-CREATE INDEX idx_notifications_user_unread ON notifications(user_id, is_read) WHERE NOT is_read;
-CREATE INDEX idx_notifications_user_recent ON notifications(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_id, is_read) WHERE NOT is_read;
+CREATE INDEX IF NOT EXISTS idx_notifications_user_recent ON notifications(user_id, created_at DESC);
 
 -- ============================================
 -- TABLE: audit_logs
 -- Complete audit trail
 -- ============================================
 
-CREATE TABLE audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -393,17 +413,17 @@ CREATE TABLE audit_logs (
 
 COMMENT ON TABLE audit_logs IS 'Complete audit trail for compliance';
 
-CREATE INDEX idx_audit_logs_org ON audit_logs(organization_id, created_at DESC);
-CREATE INDEX idx_audit_logs_user ON audit_logs(user_id, created_at DESC);
-CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
-CREATE INDEX idx_audit_logs_action ON audit_logs(action, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_org ON audit_logs(organization_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action, created_at DESC);
 
 -- ============================================
 -- TABLE: refresh_tokens
 -- JWT refresh token management
 -- ============================================
 
-CREATE TABLE refresh_tokens (
+CREATE TABLE IF NOT EXISTS refresh_tokens (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_hash VARCHAR(255) NOT NULL UNIQUE,
@@ -414,9 +434,9 @@ CREATE TABLE refresh_tokens (
 
 COMMENT ON TABLE refresh_tokens IS 'JWT refresh tokens';
 
-CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
-CREATE INDEX idx_refresh_tokens_expires ON refresh_tokens(expires_at);
-CREATE INDEX idx_refresh_tokens_valid ON refresh_tokens(user_id, expires_at)
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires ON refresh_tokens(expires_at);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_valid ON refresh_tokens(user_id, expires_at)
     WHERE revoked_at IS NULL;
 
 -- ============================================
@@ -615,26 +635,31 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================
--- TRIGGERS
+-- TRIGGERS (idempotent - drop and recreate)
 -- ============================================
 
 -- Auto-update timestamps
+DROP TRIGGER IF EXISTS tr_organizations_updated_at ON organizations;
 CREATE TRIGGER tr_organizations_updated_at
     BEFORE UPDATE ON organizations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS tr_users_updated_at ON users;
 CREATE TRIGGER tr_users_updated_at
     BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS tr_shift_types_updated_at ON shift_types;
 CREATE TRIGGER tr_shift_types_updated_at
     BEFORE UPDATE ON shift_types
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS tr_schedules_updated_at ON schedules;
 CREATE TRIGGER tr_schedules_updated_at
     BEFORE UPDATE ON schedules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS tr_leave_requests_updated_at ON leave_requests;
 CREATE TRIGGER tr_leave_requests_updated_at
     BEFORE UPDATE ON leave_requests
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
