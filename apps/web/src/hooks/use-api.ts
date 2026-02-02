@@ -119,6 +119,44 @@ export function useMe(options?: Partial<UseQueryOptions<User, ApiError>>) {
   });
 }
 
+export function useCreateUser(
+  options?: UseMutationOptions<User, ApiError, Partial<User>>
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => api.createUser(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+    },
+    ...options,
+  });
+}
+
+export function useUpdateUser(
+  options?: UseMutationOptions<User, ApiError, { id: UUID; data: Partial<User> }>
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => api.updateUser(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user(id) });
+    },
+    ...options,
+  });
+}
+
+export function useDeleteUser(options?: UseMutationOptions<void, ApiError, UUID>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+    },
+    ...options,
+  });
+}
+
 // ============================================
 // SHIFT TYPE HOOKS
 // ============================================

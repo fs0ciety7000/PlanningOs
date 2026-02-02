@@ -9,6 +9,7 @@ import { AuthLayout } from "@/components/layout/auth-layout";
 
 // Pages
 import { LoginPage } from "@/features/auth/pages/login-page";
+import { RegisterPage } from "@/features/auth/pages/register-page";
 import { DashboardPage } from "@/features/dashboard/pages/dashboard-page";
 import { PlanningPage } from "@/features/planning/pages/planning-page";
 import { AgentsPage } from "@/features/admin/pages/agents-page";
@@ -35,6 +36,7 @@ function App() {
           {/* Auth routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
           </Route>
 
           {/* Protected routes */}
