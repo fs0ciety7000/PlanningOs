@@ -458,6 +458,7 @@ DECLARE
     v_start DATE;
     v_period_start DATE;
     v_period_end DATE;
+    v_period periods;
     i INTEGER;
 BEGIN
     -- Get organization's anchor date
@@ -482,9 +483,9 @@ BEGIN
         ON CONFLICT (organization_id, year, number) DO UPDATE
         SET start_date = EXCLUDED.start_date,
             end_date = EXCLUDED.end_date
-        RETURNING * INTO STRICT periods;
+        RETURNING * INTO v_period;
 
-        RETURN NEXT periods;
+        RETURN NEXT v_period;
     END LOOP;
 
     RETURN;

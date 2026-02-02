@@ -15,9 +15,9 @@
   },
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=@planningos/web",
     "dev:web": "turbo run dev --filter=@planningos/web",
-    "dev:desktop": "turbo run dev --filter=@planningos/desktop",
+    "dev:desktop": "cd apps/desktop && pnpm tauri dev",
     "build": "turbo run build",
     "build:web": "turbo run build --filter=@planningos/web",
     "build:desktop": "turbo run build --filter=@planningos/desktop",

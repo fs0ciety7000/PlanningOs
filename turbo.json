@@ -24,5 +24,6 @@
     }
   },
   "globalDependencies": ["tsconfig.json"],
-  "ui": "tui"
+  "ui": "tui",
+  "globalPassThroughEnv": ["DATABASE_URL", "VITE_API_URL"]
 }
