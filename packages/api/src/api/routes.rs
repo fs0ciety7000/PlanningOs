@@ -7,7 +7,7 @@ use axum::{
     Router,
 };
 
-use crate::AppState;
+use crate::infrastructure::AppState;
 
 use super::handlers;
 

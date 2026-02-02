@@ -18,13 +18,7 @@ mod domain;
 mod infrastructure;
 
 use crate::infrastructure::config::Settings;
-
-/// Application state shared across handlers
-#[derive(Clone)]
-pub struct AppState {
-    pub db: sqlx::PgPool,
-    pub settings: Arc<Settings>,
-}
+use crate::infrastructure::AppState;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -61,10 +55,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("Migrations completed successfully");
 
     // Build application state
-    let state = AppState {
-        db,
-        settings: settings.clone(),
-    };
+    let state = AppState::new(db, settings.clone());
 
     // Build router
     let app = build_router(state);

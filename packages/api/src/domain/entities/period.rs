@@ -3,7 +3,7 @@
 //! Represents a 28-day period (P1-P13).
 //! 13 periods × 28 days = 364 days per year.
 
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

@@ -3,7 +3,7 @@
 //! Calculates the 13 periods (P1-P13) for any given year.
 //! Based on the logic from generate.py: calculer_periodes_dynamiques()
 
-use chrono::{Duration, NaiveDate};
+use chrono::{Datelike, Duration, NaiveDate};
 
 /// Configuration for period calculation
 #[derive(Debug, Clone)]
