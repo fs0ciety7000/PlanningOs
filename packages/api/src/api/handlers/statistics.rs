@@ -2,7 +2,7 @@
 
 use axum::{extract::State, http::StatusCode};
 
-use crate::AppState;
+use crate::infrastructure::AppState;
 
 pub async fn dashboard(State(_state): State<AppState>) -> StatusCode {
     StatusCode::NOT_IMPLEMENTED

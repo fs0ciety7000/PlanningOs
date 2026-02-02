@@ -3,7 +3,7 @@
 //! Represents a single day assignment for a user.
 //! One entry per user per day in the planning matrix.
 
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

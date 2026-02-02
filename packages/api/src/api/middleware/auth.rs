@@ -9,7 +9,7 @@ use axum::{
     response::Response,
 };
 
-use crate::AppState;
+use crate::infrastructure::AppState;
 
 /// Extract and validate JWT from Authorization header
 pub async fn auth_middleware(

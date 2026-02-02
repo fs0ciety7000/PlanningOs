@@ -3,7 +3,7 @@
 use axum::{extract::State, http::StatusCode, Json};
 use serde::{Deserialize, Serialize};
 
-use crate::AppState;
+use crate::infrastructure::AppState;
 
 #[derive(Deserialize)]
 pub struct LoginRequest {
