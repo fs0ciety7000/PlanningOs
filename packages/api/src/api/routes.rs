@@ -44,12 +44,12 @@ fn user_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(handlers::users::list).post(handlers::users::create))
         .route(
-            "/:id",
+            "/{id}",
             get(handlers::users::get)
                 .patch(handlers::users::update)
                 .delete(handlers::users::delete),
         )
-        .route("/:id/balance", get(handlers::users::balance))
+        .route("/{id}/balance", get(handlers::users::balance))
 }
 
 /// Shift type management routes
@@ -60,7 +60,7 @@ fn shift_type_routes() -> Router<AppState> {
             get(handlers::shift_types::list).post(handlers::shift_types::create),
         )
         .route(
-            "/:id",
+            "/{id}",
             get(handlers::shift_types::get)
                 .patch(handlers::shift_types::update)
                 .delete(handlers::shift_types::delete),
@@ -71,8 +71,8 @@ fn shift_type_routes() -> Router<AppState> {
 fn period_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(handlers::periods::list))
-        .route("/:id", get(handlers::periods::get))
-        .route("/:id/balances", get(handlers::periods::balances))
+        .route("/{id}", get(handlers::periods::get))
+        .route("/{id}/balances", get(handlers::periods::balances))
         .route("/generate", post(handlers::periods::generate))
 }
 
@@ -83,7 +83,7 @@ fn schedule_routes() -> Router<AppState> {
         .route("/matrix", get(handlers::schedules::matrix))
         .route("/bulk", post(handlers::schedules::bulk_update))
         .route(
-            "/:id",
+            "/{id}",
             get(handlers::schedules::get)
                 .patch(handlers::schedules::update)
                 .delete(handlers::schedules::delete),
@@ -94,14 +94,14 @@ fn schedule_routes() -> Router<AppState> {
 fn statistics_routes() -> Router<AppState> {
     Router::new()
         .route("/dashboard", get(handlers::statistics::dashboard))
-        .route("/period/:id", get(handlers::statistics::period))
-        .route("/user/:id", get(handlers::statistics::user))
+        .route("/period/{id}", get(handlers::statistics::period))
+        .route("/user/{id}", get(handlers::statistics::user))
 }
 
 /// Holiday routes
 fn holiday_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(handlers::holidays::list).post(handlers::holidays::create))
-        .route("/:id", delete(handlers::holidays::delete))
+        .route("/{id}", delete(handlers::holidays::delete))
         .route("/generate", post(handlers::holidays::generate))
 }
