@@ -76,7 +76,7 @@ interface DayColumn {
 
 function getShiftColor(code: string, shiftTypes: ShiftType[]): string {
   const shift = shiftTypes.find((s) => s.code === code);
-  return shift?.colorHex || 'FFFFFF';
+  return shift?.color?.replace('#', '') || 'FFFFFF';
 }
 
 function getDaysInMonth(date: Date): DayColumn[] {

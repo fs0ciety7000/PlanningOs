@@ -12,6 +12,8 @@ interface AuthState {
   error: string | null;
 
   // Actions
+  setUser: (user: User | null) => void;
+  setTokens: (accessToken: string, refreshToken: string) => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
@@ -53,6 +55,15 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+
+      setUser: (user: User | null) => {
+        set({ user, isAuthenticated: !!user });
+      },
+
+      setTokens: (accessToken: string, refreshToken: string) => {
+        api.setAccessToken(accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+      },
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
@@ -137,7 +148,7 @@ export const useAuthStore = create<AuthState>()(
 
       hasRole: (role: UserRole) => {
         const { user } = get();
-        return user?.roleName === role;
+        return user?.role === role;
       },
 
       hasPermission: (_permission: string) => {
