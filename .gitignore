@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+target/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Database
+*.sqlite
+*.db
+
+# Tauri
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/WixTools/
+
+# Rust
+packages/api/target/
+Cargo.lock
+
+# Generated
+*.generated.*
+sqlx-data.json.bak
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Secrets (NEVER commit these)
+*.pem
+*.key
+credentials.json
+service-account.json
+
+# Turbo
+.turbo/
+
+# Misc
+*.tsbuildinfo

@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+/* PlanningOS Theme Variables */
+@theme {
+  /* Colors - Light Mode */
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0a;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #0a0a0a;
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0a0a0a;
+
+  --color-primary: #4472c4;
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #f4f4f5;
+  --color-secondary-foreground: #18181b;
+
+  --color-muted: #f4f4f5;
+  --color-muted-foreground: #71717a;
+
+  --color-accent: #f4f4f5;
+  --color-accent-foreground: #18181b;
+
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: #e4e4e7;
+  --color-input: #e4e4e7;
+  --color-ring: #4472c4;
+
+  /* Shift Type Colors (from generate.py) */
+  --color-shift-101: #ffd9e6;
+  --color-shift-102: #ffe6f0;
+  --color-shift-111: #d9e6ff;
+  --color-shift-112: #e6f0ff;
+  --color-shift-121: #ffe6cc;
+  --color-shift-xam: #d9f2d9;
+  --color-shift-xpm: #d9f2d9;
+  --color-shift-x10: #e6d9ff;
+  --color-shift-ag: #ff4444;
+  --color-shift-cn: #ffffcc;
+  --color-shift-jc: #ffffcc;
+  --color-shift-rh: #cccccc;
+  --color-shift-ch: #d5d5d5;
+  --color-shift-rr: #c9c9c9;
+  --color-shift-cv: #96d1cc;
+  --color-shift-zm: #f0f0f0;
+
+  /* Status Colors */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Radius */
+  --radius: 0.5rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Dark Mode */
+.dark {
+  --color-background: #0a0a0a;
+  --color-foreground: #fafafa;
+
+  --color-card: #0a0a0a;
+  --color-card-foreground: #fafafa;
+
+  --color-popover: #0a0a0a;
+  --color-popover-foreground: #fafafa;
+
+  --color-primary: #6b9aef;
+  --color-primary-foreground: #0a0a0a;
+
+  --color-secondary: #27272a;
+  --color-secondary-foreground: #fafafa;
+
+  --color-muted: #27272a;
+  --color-muted-foreground: #a1a1aa;
+
+  --color-accent: #27272a;
+  --color-accent-foreground: #fafafa;
+
+  --color-destructive: #b91c1c;
+  --color-destructive-foreground: #fafafa;
+
+  --color-border: #27272a;
+  --color-input: #27272a;
+  --color-ring: #6b9aef;
+}
+
+/* Base Styles */
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted-foreground);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-foreground);
+}
+
+/* Planning Grid Specific */
+.planning-grid {
+  --cell-size: 40px;
+  --header-height: 60px;
+}
+
+.planning-cell {
+  width: var(--cell-size);
+  height: var(--cell-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--color-border);
+}
+
+.planning-cell:hover {
+  transform: scale(1.05);
+  z-index: 10;
+  box-shadow: var(--shadow-md);
+}
+
+.planning-cell.weekend {
+  background-color: var(--color-muted);
+}
+
+.planning-cell.holiday {
+  background-color: #ffc7ce;
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
