@@ -33,7 +33,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  matricule?: string;
+  matricule: string;
   avatarUrl?: string;
   phone?: string;
   cnEntitlement: number;
@@ -44,8 +44,9 @@ export interface User {
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
-  // Computed
-  roleName?: UserRole;
+  // Computed from backend join
+  role: UserRole;
+  passwordHash?: string; // Only for create/update
 }
 
 export interface LoginRequest {
@@ -77,17 +78,12 @@ export interface ShiftType {
   id: UUID;
   organizationId: UUID;
   code: string;
-  description?: string;
+  description: string;
   category: ShiftCategory;
-  colorHex: string;
-  icon?: string;
-  durationHours: number;
-  nightHours: number;
-  isCountable: boolean;
-  requiresRecovery: boolean;
-  isHolidayIndicator: boolean;
-  isRestDay: boolean;
-  displayOrder: number;
+  color: string; // Hex color like #FFD9E6
+  durationMinutes: number;
+  nightMinutes: number;
+  countsTowardsQuota: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -95,19 +91,22 @@ export interface ShiftType {
 
 export interface CreateShiftTypeRequest {
   code: string;
-  description?: string;
+  description: string;
   category: ShiftCategory;
-  colorHex: string;
-  durationHours: number;
-  nightHours: number;
-  isCountable?: boolean;
-  requiresRecovery?: boolean;
-  isHolidayIndicator?: boolean;
-  isRestDay?: boolean;
-  displayOrder?: number;
+  color: string;
+  durationMinutes: number;
+  nightMinutes: number;
+  countsTowardsQuota?: boolean;
 }
 
-export interface UpdateShiftTypeRequest extends Partial<CreateShiftTypeRequest> {}
+export interface UpdateShiftTypeRequest {
+  description?: string;
+  category?: ShiftCategory;
+  color?: string;
+  durationMinutes?: number;
+  nightMinutes?: number;
+  countsTowardsQuota?: boolean;
+}
 
 // ============================================
 // PERIODS
@@ -165,9 +164,10 @@ export interface ScheduleWithDetails extends Schedule {
   shiftCode?: string;
   shiftDescription?: string;
   shiftColor?: string;
-  durationHours?: number;
-  nightHours?: number;
+  durationMinutes?: number;
+  nightMinutes?: number;
   periodNumber?: number;
+  shiftType?: ShiftType;
 }
 
 export interface CreateScheduleRequest {
@@ -221,16 +221,18 @@ export interface CreateHolidayRequest {
 // LEAVE REQUESTS
 // ============================================
 
+export type LeaveType = 'CN' | 'JC' | 'CV' | 'AM' | 'AT' | 'MP' | 'CE';
+
 export interface LeaveRequest {
   id: UUID;
   organizationId: UUID;
   userId: UUID;
-  shiftTypeId: UUID;
+  leaveType: LeaveType;
   startDate: string;
   endDate: string;
   daysCount: number;
   status: LeaveStatus;
-  notes?: string;
+  reason?: string;
   approvedBy?: UUID;
   approvedAt?: string;
   rejectionReason?: string;
@@ -238,15 +240,14 @@ export interface LeaveRequest {
   updatedAt: string;
   // Expanded
   user?: User;
-  shiftType?: ShiftType;
   approver?: User;
 }
 
 export interface CreateLeaveRequest {
-  shiftTypeId: UUID;
+  leaveType: LeaveType;
   startDate: string;
   endDate: string;
-  notes?: string;
+  reason?: string;
 }
 
 export interface ApproveLeaveRequest {
